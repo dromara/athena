@@ -23,9 +23,16 @@
         <commons.beanutils.version>1.9.3</commons.beanutils.version>
         <junit.version>4.11</junit.version>
         <commons.io.version>2.5</commons.io.version>
+        <lombok.version>1.16.20</lombok.version>
     </properties>
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>io.prometheus</groupId>
                 <artifactId>simpleclient</artifactId>

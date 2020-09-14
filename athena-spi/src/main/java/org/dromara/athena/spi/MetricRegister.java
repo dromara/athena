@@ -43,30 +43,30 @@ public interface MetricRegister {
     void registerCounter(String name, String[] labelNames, String doc);
     
     /**
-     * Register timer.
+     * Register histogram.
      *
      * @param name       the name
      * @param labelNames the label names
      * @param doc        the doc
      */
-    void registerTimer(String name, String[] labelNames, String doc);
+    void registerHistogram(String name, String[] labelNames, String doc);
     
     /**
-     * Record count.
+     * Counter inc.
      *
      * @param name        the name
      * @param labelValues the label values
      */
-    void recordCount(String name, String[] labelValues);
+    void counterInc(String name, String[] labelValues);
     
     /**
-     * Record count.
+     * counterInc.
      *
      * @param name        the name
      * @param labelValues the label values
      * @param count       the count
      */
-    void recordCount(String name, String[] labelValues, long count);
+    void counterInc(String name, String[] labelValues, long count);
     
     /**
      * Record gauge inc.
@@ -74,7 +74,7 @@ public interface MetricRegister {
      * @param name        the name
      * @param labelValues the label values
      */
-    void recordGaugeInc(String name, String[] labelValues);
+    void gaugeInc(String name, String[] labelValues);
     
     /**
      * Record gauge dec.
@@ -82,7 +82,7 @@ public interface MetricRegister {
      * @param name        the name
      * @param labelValues the label values
      */
-    void recordGaugeDec(String name, String[] labelValues);
+    void gaugeDec(String name, String[] labelValues);
     
     /**
      * Record time.
@@ -92,10 +92,5 @@ public interface MetricRegister {
      * @param duration    the duration
      */
     void recordTime(String name, String[] labelValues, long duration);
-    
-    /**
-     * Start endpoint.
-     */
-    void startEndpoint();
 
 }

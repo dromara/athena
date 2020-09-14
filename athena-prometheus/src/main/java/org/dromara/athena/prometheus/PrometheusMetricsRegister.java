@@ -33,38 +33,42 @@ public class PrometheusMetricsRegister implements MetricRegister {
         this.configuration = configuration;
     }
     
-    public void startEndpoint() {
-    
-    }
-    
+    @Override
     public void registerGauge(final String name, final String[] labelNames, final String doc) {
     
     }
     
+    @Override
     public void registerCounter(final String name, final String[] labelNames, final String doc) {
     
     }
     
-    public void registerTimer(final String name, final String[] labelNames, final String doc) {
+    @Override
+    public void registerHistogram(final String name, final String[] labelNames, final String doc) {
     
     }
     
-    public void recordCount(final String name, final String[] labelValues) {
+    @Override
+    public void counterInc(final String name, final String[] labelValues) {
     
     }
     
-    public void recordCount(final String name, final String[] labelValues, final long count) {
+    @Override
+    public void counterInc(final String name, final String[] labelValues, final long count) {
     
     }
     
-    public void recordGaugeInc(final String name, final String[] labelValues) {
+    @Override
+    public void gaugeInc(final String name, final String[] labelValues) {
     
     }
     
-    public void recordGaugeDec(final String name, final String[] labelValues) {
+    @Override
+    public void gaugeDec(final String name, final String[] labelValues) {
     
     }
     
+    @Override
     public void recordTime(final String name, final String[] labelValues, final long duration) {
     
     }

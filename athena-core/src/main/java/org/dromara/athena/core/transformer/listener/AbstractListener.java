@@ -17,9 +17,22 @@
 
 package org.dromara.athena.core.transformer.listener;
 
+import java.util.List;
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.collections.CollectionUtils;
+import org.dromara.athena.core.config.Metric;
 import org.dromara.athena.core.reporter.MetricsReporter;
+import org.dromara.athena.core.utils.MetricsLabelUtils;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.AdviceAdapter;
+
+import static org.objectweb.asm.Opcodes.AASTORE;
+import static org.objectweb.asm.Opcodes.ACONST_NULL;
+import static org.objectweb.asm.Opcodes.ALOAD;
+import static org.objectweb.asm.Opcodes.ANEWARRAY;
+import static org.objectweb.asm.Opcodes.ASTORE;
+import static org.objectweb.asm.Opcodes.DUP;
+import static org.objectweb.asm.Opcodes.INVOKESTATIC;
 
 
 /**
@@ -58,4 +71,44 @@ public abstract class AbstractListener implements Listener {
         this.argTypes = argTypes;
         this.access = access;
     }
+    
+    protected void injectLabel(final Metric metric) {
+        int nameVar = aa.newLocal(Type.getType(String.class));
+        aa.visitLdcInsn(metric.getName());
+        aa.visitVarInsn(ASTORE, nameVar);
+        List<String> labelValues = MetricsLabelUtils.getLabelValues(metric.getLabels());
+        if (CollectionUtils.isNotEmpty(labelValues)) {
+            int labelVar = injectLabelValues(labelValues);
+            aa.visitVarInsn(ALOAD, nameVar);
+            aa.visitVarInsn(ALOAD, labelVar);
+        } else {
+            aa.visitVarInsn(ALOAD, nameVar);
+            aa.visitInsn(ACONST_NULL);
+        }
+    }
+    
+    protected int injectLabelValues(final List<String> labelValues) {
+        int labelVar = aa.newLocal(Type.getType(String[].class));
+        aa.visitInsn(labelValues.size() + 3);
+        aa.visitTypeInsn(ANEWARRAY, Type.getInternalName(String.class));
+        for (int i = 0; i < labelValues.size(); i++) {
+            aa.visitInsn(DUP);
+            aa.visitInsn(i + 3);
+            injectLabelValue(labelValues.get(i));
+        }
+        aa.visitVarInsn(ASTORE, labelVar);
+        return labelVar;
+    }
+    
+    private void injectLabelValue(final String labelValue) {
+        if (MetricsLabelUtils.hasBeanParam(labelValue)) {
+            aa.visitLdcInsn(MetricsLabelUtils.getLabelVarIndex(labelValue));
+            aa.visitMethodInsn(INVOKESTATIC, Type.getInternalName(PropertyUtils.class), "getNestedProperty",
+                    Type.getMethodDescriptor(Type.getType(Object.class), Type.getType(Object.class), Type.getType(String.class)), false);
+        }
+        aa.visitMethodInsn(INVOKESTATIC, Type.getInternalName(String.class), "valueOf",
+                Type.getMethodDescriptor(Type.getType(String.class), Type.getType(Object.class)), false);
+        aa.visitInsn(AASTORE);
+    }
+    
 }

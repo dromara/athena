@@ -18,6 +18,9 @@
 package org.dromara.athena.core.utils;
 
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import org.objectweb.asm.Type;
 
 /**
  * The type Metrics label utils.
@@ -27,6 +30,10 @@ import java.util.List;
 public class MetricsLabelUtils {
     
     private static final String REGEX = ":";
+    
+    private static final String PARAM = ".";
+    
+    private static final String REGEX_PATTERN = "\\$([0-9]+|this)([a-zA-Z.]+)*";
     
     /**
      * Get label names string [ ].
@@ -38,4 +45,66 @@ public class MetricsLabelUtils {
         return labels.stream().map(label -> label.split(REGEX)[0]).toArray(String[]::new );
     }
     
+    /**
+     * Check labels boolean.
+     *
+     * @param argTypes the arg types
+     * @param labels   the labels
+     * @return the boolean
+     */
+    public static boolean checkLabels(final Type[] argTypes, final List<String> labels) {
+        return getLabelValues(labels).stream().allMatch(labelValue -> checkLabel(argTypes, labelValue));
+    }
+    
+    /**
+     * Gets label values.
+     *
+     * @param labels the labels
+     * @return the label values
+     */
+    public static List<String> getLabelValues(final List<String> labels) {
+        return labels.stream().map(label -> label.split(REGEX)[1]).collect(Collectors.toList());
+    }
+    
+    /**
+     * Has bean param boolean.
+     *
+     * @param labelValue the label value
+     * @return the boolean
+     */
+    public static boolean hasBeanParam(final String labelValue) {
+        return labelValue.contains(PARAM);
+    }
+    
+    /**
+     * Gets label var index.
+     *
+     * @param value the value
+     * @return the label var index
+     */
+    public static String getLabelVarIndex(final String value) {
+        return value.substring(value.indexOf(PARAM) + 1);
+    }
+    
+    private static boolean checkLabel(final Type[] argTypes, final String labelValue) {
+        if (labelValue.startsWith("$")) {
+            if (Pattern.matches(REGEX_PATTERN, labelValue)) {
+                return false;
+            }
+            int index = getLabelValueIndex(labelValue);
+            if (index >= argTypes.length) {
+               return false;
+            }
+            Type argType = argTypes[index];
+            return argType.getSort() != Type.ARRAY;
+        }
+        return true;
+    }
+    
+    private static int getLabelValueIndex(final String labelValue) {
+        if (hasBeanParam(labelValue)) {
+            return Integer.parseInt(labelValue.substring(1, labelValue.indexOf(PARAM)));
+        }
+        return Integer.parseInt(labelValue.substring(1));
+    }
 }

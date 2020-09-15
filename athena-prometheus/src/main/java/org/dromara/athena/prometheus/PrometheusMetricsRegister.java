@@ -17,7 +17,17 @@
 
 package org.dromara.athena.prometheus;
 
+import io.prometheus.client.CollectorRegistry;
+import io.prometheus.client.Counter;
+import io.prometheus.client.Gauge;
+import io.prometheus.client.Histogram;
+import io.prometheus.client.exporter.HTTPServer;
+import io.prometheus.client.hotspot.DefaultExports;
+import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import org.dromara.athena.prometheus.collector.BuildInfoCollector;
 import org.dromara.athena.spi.MetricRegister;
 
 /**
@@ -27,50 +37,129 @@ import org.dromara.athena.spi.MetricRegister;
  */
 public class PrometheusMetricsRegister implements MetricRegister {
     
-    private final Map<String, Object> configuration;
+    private static final int DEFAULT_HTTP_PORT = 9090;
     
-    public PrometheusMetricsRegister(final Map<String, Object> configuration) {
-        this.configuration = configuration;
-    }
+    private static final Map<String, Counter> COUNTER_MAP = new ConcurrentHashMap<>();
     
-    @Override
-    public void registerGauge(final String name, final String[] labelNames, final String doc) {
+    private static final Map<String, Gauge> GAUGE_MAP = new ConcurrentHashMap<>();
     
+    private static final Map<String, Histogram> HISTOGRAM_MAP = new ConcurrentHashMap<>();
+    
+    private final Map<String, Object> configMap;
+    
+    public PrometheusMetricsRegister(final Map<String, Object> configMap) {
+        this.configMap = configMap;
+        registerJvm(configMap);
+        startServer();
     }
     
     @Override
     public void registerCounter(final String name, final String[] labelNames, final String doc) {
-    
+        Counter.Builder builder = Counter.build().name(name).help(doc);
+        if (labelNames != null) {
+            builder.labelNames(labelNames);
+        }
+        COUNTER_MAP.put(name, builder.register());
     }
     
     @Override
-    public void registerHistogram(final String name, final String[] labelNames, final String doc) {
+    public void registerGauge(final String name, final String[] labelNames, final String doc) {
+        if (!GAUGE_MAP.containsKey(name)) {
+            Gauge.Builder builder = Gauge.build().name(name).help(doc);
+            if (labelNames != null) {
+                builder.labelNames(labelNames);
+            }
+            GAUGE_MAP.put(name, builder.register());
+        }
+    }
     
+    
+    @Override
+    public void registerHistogram(final String name, final String[] labelNames, final String doc) {
+        Histogram.Builder builder = Histogram.build().name(name).help(doc);
+        if (labelNames != null) {
+            builder.labelNames(labelNames);
+        }
+        HISTOGRAM_MAP.put(name, builder.register());
     }
     
     @Override
     public void counterInc(final String name, final String[] labelValues) {
-    
+        Counter counter = COUNTER_MAP.get(name);
+        if (labelValues != null) {
+            counter.labels(labelValues).inc();
+        } else {
+            counter.inc();
+        }
     }
     
     @Override
     public void counterInc(final String name, final String[] labelValues, final long count) {
-    
+        Counter counter = COUNTER_MAP.get(name);
+        if (labelValues != null) {
+            counter.labels(labelValues).inc(count);
+        } else {
+            counter.inc(count);
+        }
     }
     
     @Override
     public void gaugeInc(final String name, final String[] labelValues) {
-    
+        Gauge gauge = GAUGE_MAP.get(name);
+        if (labelValues != null) {
+            gauge.labels(labelValues).inc();
+        } else {
+            gauge.inc();
+        }
     }
     
     @Override
     public void gaugeDec(final String name, final String[] labelValues) {
-    
+        Gauge gauge = GAUGE_MAP.get(name);
+        if (labelValues != null) {
+            gauge.labels(labelValues).dec();
+        } else {
+            gauge.dec();
+        }
     }
     
     @Override
     public void recordTime(final String name, final String[] labelValues, final long duration) {
-    
+        Histogram histogram = HISTOGRAM_MAP.get(name);
+        if (labelValues != null) {
+            histogram.labels(labelValues).observe(duration);
+        } else {
+            histogram.observe(duration);
+        }
     }
     
+    public void startServer() {
+        int port = DEFAULT_HTTP_PORT;
+        if (configMap.containsKey("port")) {
+            port = Integer.parseInt((String) configMap.get("port"));
+        }
+        String host = (String) configMap.get("host");
+        InetSocketAddress inetSocketAddress;
+        if ("".equals(host) || null == host) {
+            inetSocketAddress = new InetSocketAddress(port);
+        } else {
+            inetSocketAddress = new InetSocketAddress(host, port);
+        }
+        try {
+            new HTTPServer(inetSocketAddress, CollectorRegistry.defaultRegistry, true);
+            System.out.println("you start prometheus metrics http server  host is : " + host + " port is : " + port);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private void registerJvm(final Map<String, Object> configMap) {
+        if (!configMap.isEmpty()) {
+            boolean enabled = Boolean.parseBoolean(configMap.get("enabled").toString());
+            if (enabled) {
+                new BuildInfoCollector().register();
+                DefaultExports.initialize();
+            }
+        }
+    }
 }

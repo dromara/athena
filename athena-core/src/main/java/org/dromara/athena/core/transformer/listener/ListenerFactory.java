@@ -18,10 +18,8 @@
 package org.dromara.athena.core.transformer.listener;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import org.dromara.athena.core.config.Metric;
-import org.dromara.athena.core.enums.MetricType;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.AdviceAdapter;
 
@@ -31,7 +29,7 @@ import org.objectweb.asm.commons.AdviceAdapter;
 public class ListenerFactory {
     
     /**
-     * Create injectors list.
+     * New listeners list.
      *
      * @param metrics       the metrics
      * @param adviceAdapter the advice adapter
@@ -39,18 +37,18 @@ public class ListenerFactory {
      * @param access        the access
      * @return the list
      */
-    public static List<Listener> createInjectors(final Map<MetricType, Metric> metrics, final AdviceAdapter adviceAdapter, final Type[] argTypes, final int access) {
-        return metrics.values().stream().map(metric -> createInjector(metric, adviceAdapter, argTypes, access)).collect(Collectors.toList());
+    public static List<Listener> newListeners(final List<Metric> metrics, final AdviceAdapter adviceAdapter, final Type[] argTypes, final int access) {
+        return metrics.stream().map(metric -> newListener(metric, adviceAdapter, argTypes, access)).collect(Collectors.toList());
     }
     
-    private static Listener createInjector(final Metric metric, final AdviceAdapter adviceAdapter, final Type[] argTypes, final int access) {
+    private static Listener newListener(final Metric metric, final AdviceAdapter adviceAdapter, final Type[] argTypes, final int access) {
         switch (metric.getType()) {
             case COUNTER:
                 return new CounterListener(metric, adviceAdapter, argTypes, access);
             case GAUGE:
                 return new GaugeListener(metric, adviceAdapter, argTypes, access);
             case HISTOGRAM:
-                return new GaugeListener(metric, adviceAdapter, argTypes, access);
+                return new HistogramListener(metric, adviceAdapter, argTypes, access);
             default:
                 throw new IllegalStateException("we not support metric type: " + metric.getType());
         }

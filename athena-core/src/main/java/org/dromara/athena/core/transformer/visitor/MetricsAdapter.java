@@ -19,13 +19,12 @@ package org.dromara.athena.core.transformer.visitor;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import org.apache.commons.collections.CollectionUtils;
 import org.dromara.athena.core.config.Metric;
-import org.dromara.athena.core.enums.MetricType;
 import org.dromara.athena.core.reporter.MetricsReporter;
 import org.dromara.athena.core.transformer.listener.Listener;
 import org.dromara.athena.core.transformer.listener.ListenerFactory;
-import org.dromara.athena.core.utils.MetricsUtils;
+import org.dromara.athena.core.utils.MetricsLabelUtils;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.AdviceAdapter;
@@ -37,7 +36,7 @@ import org.objectweb.asm.commons.AdviceAdapter;
  */
 public class MetricsAdapter extends AdviceAdapter {
     
-    private final Map<MetricType, Metric> metrics;
+    private final List<Metric> metrics;
     
     private final Type[] argTypes;
     
@@ -52,48 +51,50 @@ public class MetricsAdapter extends AdviceAdapter {
     /**
      * Instantiates a new Metrics adapter.
      *
-     * @param mv         the mv
-     * @param className  the class name
-     * @param access     the access
-     * @param name       the name
-     * @param desc       the desc
-     * @param metricList the metric list
+     * @param mv        the mv
+     * @param className the class name
+     * @param access    the access
+     * @param name      the name
+     * @param desc      the desc
+     * @param metrics   the metric list
      */
-    public MetricsAdapter(final MethodVisitor mv, final String className, final int access, final String name, final String desc, final List<Metric> metricList) {
+    public MetricsAdapter(final MethodVisitor mv, final String className, final int access, final String name, final String desc, final List<Metric> metrics) {
         super(ASM5, mv, access, name, desc);
         this.className = className;
         this.methodName = name;
         this.argTypes = Type.getArgumentTypes(desc);
         this.access = access;
-        this.metrics = MetricsUtils.toMap(metricList);
+        this.metrics = metrics;
     }
-
+    
     @Override
     protected void onMethodEnter() {
-        if (metrics.isEmpty()) {
+        if (CollectionUtils.isEmpty(metrics)) {
             listeners = Collections.emptyList();
             return;
         }
-        listeners = ListenerFactory.createInjectors(metrics, this, argTypes, access);
-        validateLabels();
-        MetricsReporter.registerMetrics(metrics.values());
+        if (!checkLabels()) {
+            throw new IllegalArgumentException("you class name :" + className  + " methodName :" + methodName + ", labels config error");
+        }
+        listeners = ListenerFactory.newListeners(metrics, this, argTypes, access);
+        MetricsReporter.registerMetrics(metrics);
         listeners.forEach(Listener::listenerOnMethodEnter);
     }
-
+    
     @Override
     public void visitMaxs(int maxStack, int maxLocals) {
         listeners.forEach(listener -> listener.listenerOnVisitMaxs(maxStack, maxLocals));
         mv.visitMaxs(maxStack, maxLocals);
     }
-
+    
     @Override
     protected void onMethodExit(int opcode) {
         listeners.forEach(listener -> listener.listenerOnMethodExit(opcode));
     }
-
-    private void validateLabels() {
-        for (Metric metric : metrics.values()) {
-           // validateLabelValues(methodName, metric.getLabels(), argTypes);
-        }
+    
+    private boolean checkLabels() {
+        return metrics.stream().filter(metric -> CollectionUtils.isNotEmpty(metric.getLabels()))
+                .allMatch(metric -> MetricsLabelUtils.checkLabels(argTypes, metric.getLabels()));
     }
+    
 }

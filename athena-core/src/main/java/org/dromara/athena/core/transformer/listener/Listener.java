@@ -41,6 +41,6 @@ public interface Listener {
      *
      * @param opcode the opcode
      */
-    default void listenerOnMethodExit(int opcode){
+    default void listenerOnMethodExit(int opcode) {
     }
 }

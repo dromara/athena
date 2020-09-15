@@ -18,9 +18,9 @@
 package org.dromara.athena.core.transformer;
 
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
+import lombok.SneakyThrows;
 import org.dromara.athena.core.config.AgentConfig;
 import org.dromara.athena.core.config.Debugger;
 import org.dromara.athena.core.transformer.visitor.MetricsClassVisitor;
@@ -33,6 +33,7 @@ import static org.objectweb.asm.ClassWriter.COMPUTE_FRAMES;
 import static org.objectweb.asm.ClassWriter.COMPUTE_MAXS;
 
 /**
+ * The type Metrics class transformer.
  *
  * @author xiaoyu
  */
@@ -42,32 +43,47 @@ public class MetricsClassTransformer implements ClassFileTransformer {
     
     private final Debugger debugger;
     
-    public MetricsClassTransformer(final AgentConfig agentConfig, final Debugger debugger) {
+    /**
+     * Instantiates a new Metrics class transformer.
+     *
+     * @param agentConfig the agent config
+     */
+    public MetricsClassTransformer(final AgentConfig agentConfig) {
         this.agentConfig = agentConfig;
-        this.debugger = debugger;
+        this.debugger = agentConfig.getDebugger();
     }
     
     @Override
-    public byte[] transform(final ClassLoader loader, final String className,
-                            final Class<?> classBeingRedefined, final ProtectionDomain protectionDomain,
-                            final byte[] classfileBuffer) {
-        // rewrite only if metric found & white listed or not blacklisted
+    public byte[] transform(final ClassLoader loader, final String className, final Class<?> classBeingRedefined,
+                            final ProtectionDomain protectionDomain, final byte[] classfileBuffer) {
         if (agentConfig.hasMetric(className)) {
             ClassReader cr = new ClassReader(classfileBuffer);
             ClassWriter cw = new ASMClassWriter(COMPUTE_FRAMES | COMPUTE_MAXS, loader);
             ClassVisitor cv = new MetricsClassVisitor(cw, agentConfig);
             cr.accept(cv, EXPAND_FRAMES);
-            if (debugger.getDebug()) {
-                try {
-                    FileOutputStream fos = new FileOutputStream(debugger.getOutPath() + className + ".class");
-                    fos.write(cw.toByteArray());
-                    fos.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+            output(cw, className);
             return cw.toByteArray();
         }
         return classfileBuffer;
     }
+    
+    @SneakyThrows
+    private void output(final ClassWriter cw, final String className) {
+        if (debugger.getDebug()) {
+            try (FileOutputStream fos = new FileOutputStream(getPath() + className.substring(className.lastIndexOf("/") + 1) + ".class");) {
+                fos.write(cw.toByteArray());
+            }
+        }
+    }
+    
+    private String getPath() {
+        String path;
+        if ("".equalsIgnoreCase(debugger.getOutPath())) {
+            path = System.getProperty("user.dir");
+        } else {
+            path = debugger.getOutPath();
+        }
+        return path;
+    }
+    
 }

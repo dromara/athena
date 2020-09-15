@@ -26,15 +26,12 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 
 /**
- * We need to override the getCommonSuperClass method of ClassWriter as the default implementation (don't know why)
+ * We need to override the getCommonSuperClass method of ClassWriter as the default implementation
  * triggers loading of classes used in the common super class resolution. This causes linkage and circular loading
- * issues and has been a real nightmare to sort out.. There wasn't anywhere on the AMS documentation or warnings
- * that I found this..
+ * issues and has been a real nightmare to sort out. There wasn't anywhere on the AMS documentation or warnings
+ * that I found this.
  *
- * The solution is taken from
- * https://github.com/naver/pinpoint/blob/master/profiler/src/main/java/com/navercorp/pinpoint/profiler/instrument/ASMClassWriter.java
  */
-
 public final class ASMClassWriter extends ClassWriter {
 
     private static final String OBJECT_CLASS_INTERNAL_NAME = "java/lang/Object";
@@ -57,7 +54,6 @@ public final class ASMClassWriter extends ClassWriter {
             // object is the root of the class hierarchy.
             return OBJECT_CLASS_INTERNAL_NAME;
         }
-
         if (classInternalName1.equals(classInternalName2)) {
             // two equal.
             return classInternalName1;

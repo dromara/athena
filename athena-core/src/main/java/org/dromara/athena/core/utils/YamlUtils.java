@@ -40,7 +40,7 @@ public class YamlUtils {
     /**
      * The constant YAML_MAPPER.
      */
-    public final static ObjectMapper YAML_MAPPER = new ObjectMapper(new YAMLFactory()) {
+    public static final ObjectMapper YAML_MAPPER = new ObjectMapper(new YAMLFactory()) {
         {
             configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             configure(JsonParser.Feature.STRICT_DUPLICATE_DETECTION, true);
@@ -49,6 +49,12 @@ public class YamlUtils {
         }
     };
     
+    /**
+     * Create agent config agent config.
+     *
+     * @param filename the filename
+     * @return the agent config
+     */
     @SneakyThrows
     public static AgentConfig createAgentConfig(final String filename) {
         if (Objects.isNull(filename)) {
@@ -71,11 +77,11 @@ public class YamlUtils {
     }
     
     private static class KlassModule extends SimpleModule {
-        
+    
         /**
          * Instantiates a new Klass module.
          */
-        public KlassModule() {
+        KlassModule() {
             addKeyDeserializer(Klass.class, new KlassDeserializer());
         }
     }

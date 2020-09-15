@@ -52,7 +52,13 @@ public class GaugeListener extends AbstractListener {
     @Override
     public void listenerOnMethodEnter() {
         injectLabel(metric);
-        aa.visitMethodInsn(INVOKESTATIC, METRICS_REPORTER_CLASSNAME, INC_METHOD, SIGNATURE, false);
+        String method = metric.getMethod();
+        String methodName;
+        if (null != method && !"".equalsIgnoreCase(method)) {
+            methodName = method;
+        } else {
+            methodName = INC_METHOD;
+        }
+        aa.visitMethodInsn(INVOKESTATIC, METRICS_REPORTER_CLASSNAME, methodName, SIGNATURE, false);
     }
-    
 }

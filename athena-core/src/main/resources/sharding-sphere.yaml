@@ -1,0 +1,31 @@
+imports:
+  - com/test/controller/HelloController
+  - java/lang/Object
+  - java/lang/String
+
+
+
+metrics:
+  # Basic Servlet
+  HelloController.say(LString;)LString;:
+    - type: Timed
+      name: helloLatencies
+      doc: hello http resource latencies
+      labels: ['path:$0.toUpperCase']
+#    - type: Counted
+#      name: hello
+#      doc: hello requests
+#      labels: ['aaa:$0.toUpperCase']
+    - type: Gauged
+      name: helloGauged
+      doc: hello requestsGauged
+      labels: ['GaugedAA:$0']
+
+configMap:
+  jvmEnabled: true
+  port : 9090
+  host:
+
+debugger:
+  debug: true
+  outPath:

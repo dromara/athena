@@ -37,7 +37,7 @@ public class HistogramListener extends AbstractListener {
 
     private static final String METHOD = "recordTime";
     
-    private static final String SIGNATURE = Type.getMethodDescriptor(Type.VOID_TYPE,Type.getType(String.class), Type.getType(String[].class), Type.LONG_TYPE);
+    private static final String SIGNATURE = Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(String.class), Type.getType(String[].class), Type.LONG_TYPE);
     
     private final Metric metric;
     

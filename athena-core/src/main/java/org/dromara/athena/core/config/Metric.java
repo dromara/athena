@@ -33,6 +33,8 @@ public class Metric {
     
     private final MetricType type;
     
+    private String method;
+    
     private final String name;
     
     private final String doc;
@@ -43,16 +45,19 @@ public class Metric {
      * Instantiates a new Metric.
      *
      * @param type   the type
+     * @param method the method
      * @param name   the name
      * @param doc    the doc
      * @param labels the labels
      */
     @JsonCreator
-    Metric(@JsonProperty("type") MetricType type,
-           @JsonProperty("name") String name,
-           @JsonProperty("doc") String doc,
-           @JsonProperty("labels") List<String> labels) {
+    Metric(@JsonProperty("type") final MetricType type,
+           @JsonProperty("method") final String method,
+           @JsonProperty("name") final String name,
+           @JsonProperty("doc") final String doc,
+           @JsonProperty("labels") final List<String> labels) {
         this.type = type;
+        this.method = method;
         this.name = name;
         this.doc = doc;
         this.labels = labels;

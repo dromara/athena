@@ -144,7 +144,7 @@ public class MetricsReporter {
         METRIC_REGISTER.recordTime(name, labelValues, duration);
     }
 
-    private static String[] getLabelNames(List<String> labels) {
+    private static String[] getLabelNames(final List<String> labels) {
         return MetricsLabelUtils.getLabelNames(labels);
     }
 }

@@ -18,6 +18,11 @@
 package org.dromara.athena.core;
 
 import java.lang.instrument.Instrumentation;
+import org.dromara.athena.core.config.AgentConfig;
+import org.dromara.athena.core.config.AgentParser;
+import org.dromara.athena.core.transformer.MetricsClassTransformer;
+import org.dromara.athena.core.utils.YamlUtils;
+import org.dromara.athena.spi.MetricsProvider;
 
 /**
  * The type Athena agent.
@@ -33,6 +38,9 @@ public class AthenaAgent {
      * @param instrumentation the instrumentation
      */
     public static void premain(final String args, final Instrumentation instrumentation) {
-    
+        AgentParser parser = new AgentParser(args);
+        AgentConfig agentConfig = YamlUtils.createAgentConfig(parser.getConfigPath());
+        MetricsProvider.INSTANCE.registerConfigMap(agentConfig.getConfigMap());
+        instrumentation.addTransformer(new MetricsClassTransformer(agentConfig), instrumentation.isRetransformClassesSupported());
     }
 }

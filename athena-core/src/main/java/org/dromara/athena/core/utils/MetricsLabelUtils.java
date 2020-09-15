@@ -42,7 +42,7 @@ public class MetricsLabelUtils {
      * @return the string [ ]
      */
     public static String[] getLabelNames(final List<String> labels) {
-        return labels.stream().map(label -> label.split(REGEX)[0]).toArray(String[]::new );
+        return labels.stream().map(label -> label.split(REGEX)[0]).toArray(String[]::new);
     }
     
     /**
@@ -93,7 +93,7 @@ public class MetricsLabelUtils {
             }
             int index = getLabelValueIndex(labelValue);
             if (index >= argTypes.length) {
-               return false;
+                return false;
             }
             Type argType = argTypes[index];
             return argType.getSort() != Type.ARRAY;

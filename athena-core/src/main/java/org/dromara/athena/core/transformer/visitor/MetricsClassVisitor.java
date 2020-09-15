@@ -56,13 +56,13 @@ public class MetricsClassVisitor extends ClassVisitor {
     public void visit(final int version, final int access, final String name, final String signature, final String superName, final String[] interfaces) {
         super.visit(version, access, name, signature, superName, interfaces);
         this.className = name;
-        this.isInterface = 0!= (access & ACC_INTERFACE) ;
+        this.isInterface = 0 != (access & ACC_INTERFACE);
     }
 
     @Override
     public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature, final String[] exceptions) {
         MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
-        boolean isSyntheticMethod = 0!= (access & ACC_SYNTHETIC);
+        boolean isSyntheticMethod = 0 != (access & ACC_SYNTHETIC);
         if (!isInterface && !isSyntheticMethod && mv != null) {
             List<Metric> metadata = agentConfig.findByKey(className, name, desc);
             mv = new MetricsAdapter(mv, className, access, name, desc, metadata);

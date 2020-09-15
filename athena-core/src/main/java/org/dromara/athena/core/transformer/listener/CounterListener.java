@@ -44,7 +44,7 @@ public class CounterListener extends AbstractListener {
      * @param argTypes  the arg types
      * @param access    the access
      */
-    public CounterListener(Metric metric, AdviceAdapter aa, Type[] argTypes, int access) {
+    public CounterListener(final Metric metric, final AdviceAdapter aa, final Type[] argTypes, final int access) {
         super(aa, argTypes, access);
         this.metric = metric;
     }

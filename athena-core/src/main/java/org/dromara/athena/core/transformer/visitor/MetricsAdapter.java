@@ -74,7 +74,7 @@ public class MetricsAdapter extends AdviceAdapter {
             return;
         }
         if (!checkLabels()) {
-            throw new IllegalArgumentException("you class name :" + className  + " methodName :" + methodName + ", labels config error");
+            throw new IllegalArgumentException("you class name :" + className + " methodName :" + methodName + ", labels config error");
         }
         listeners = ListenerFactory.newListeners(metrics, this, argTypes, access);
         MetricsReporter.registerMetrics(metrics);
@@ -82,13 +82,13 @@ public class MetricsAdapter extends AdviceAdapter {
     }
     
     @Override
-    public void visitMaxs(int maxStack, int maxLocals) {
+    public void visitMaxs(final int maxStack, final int maxLocals) {
         listeners.forEach(listener -> listener.listenerOnVisitMaxs(maxStack, maxLocals));
         mv.visitMaxs(maxStack, maxLocals);
     }
     
     @Override
-    protected void onMethodExit(int opcode) {
+    protected void onMethodExit(final int opcode) {
         listeners.forEach(listener -> listener.listenerOnMethodExit(opcode));
     }
     

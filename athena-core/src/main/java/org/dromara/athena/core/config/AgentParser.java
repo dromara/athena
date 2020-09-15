@@ -15,45 +15,40 @@
  * limitations under the License.
  */
 
-package org.dromara.athena.spi;
+package org.dromara.athena.core.config;
 
-import java.util.Map;
+import java.util.Arrays;
+import java.util.Optional;
 
 /**
- * The enum Metrics provider.
+ * The type Agent parser.
  */
-public enum MetricsProvider {
+public class AgentParser {
+    
+    private static final String CONFIG = "config";
+    
+    private final String[] agentArgs;
     
     /**
-     * Instance metrics provider.
-     */
-    INSTANCE;
-    
-    private static MetricRegisterFactory metricRegisterFactory;
-    
-    private Map<String, Object> configMap;
-    
-    static {
-        metricRegisterFactory = ServiceLoader.getServiceLoader(MetricRegisterFactory.class).newServiceInstances().orElse(null);
-    }
-    
-    
-    /**
-     * Register config map.
+     * Instantiates a new Agent parser.
      *
-     * @param configMap the config map
+     * @param args the args
      */
-    public void registerConfigMap(final Map<String, Object> configMap) {
-        this.configMap = configMap;
+    public AgentParser(final String args) {
+        agentArgs = Optional.ofNullable(args).map(arg -> arg.split(",")).orElse(new String[]{});
     }
     
     /**
-     * Create metric system metric register.
+     * Gets config path.
      *
-     * @return the metric register
+     * @return the config path
      */
-    public MetricRegister newInstance() {
-        return metricRegisterFactory.newInstance(configMap);
+    public String getConfigPath() {
+        if (agentArgs.length == 0) {
+            return "/sharding-sphere.yaml";
+        }
+        return Arrays.stream(agentArgs)
+                .filter(arg -> arg.startsWith(CONFIG))
+                .map(arg -> arg.replace(CONFIG + ":", "")).findFirst().orElse(null);
     }
-    
 }

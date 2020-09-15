@@ -63,10 +63,10 @@ public class AgentConfig {
      */
     @JsonCreator
     public AgentConfig(
-            @JsonProperty("metrics") Map<Klass, List<Metric>> metrics,
-            @JsonProperty("imports") Set<String> imports,
-            @JsonProperty("configMap") Map<String, Object> configMap,
-            @JsonProperty("debugger") Debugger debugger) {
+            @JsonProperty("metrics") final Map<Klass, List<Metric>> metrics,
+            @JsonProperty("imports") final Set<String> imports,
+            @JsonProperty("configMap") final Map<String, Object> configMap,
+            @JsonProperty("debugger") final Debugger debugger) {
         this.imports = Optional.ofNullable(imports).orElse(Collections.emptySet());
         this.metrics = Optional.ofNullable(metrics).map(entry -> mergeByImports(entry, imports)).orElse(Collections.emptyMap());
         this.configMap = Optional.ofNullable(configMap).orElse(Collections.emptyMap());
@@ -93,7 +93,7 @@ public class AgentConfig {
         if (metrics.isEmpty()) {
             return Collections.emptyList();
         }
-       return metrics.keySet().stream().filter(klass -> klass.getClassName().equalsIgnoreCase(className))
+        return metrics.keySet().stream().filter(klass -> klass.getClassName().equalsIgnoreCase(className))
                .flatMap(klass -> metrics.get(klass).stream()).collect(Collectors.toList());
     }
     

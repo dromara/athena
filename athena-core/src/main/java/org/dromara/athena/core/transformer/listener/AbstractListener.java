@@ -88,7 +88,6 @@ public abstract class AbstractListener implements Listener {
     }
     
     protected int injectLabelValues(final List<String> labelValues) {
-        int labelVar = aa.newLocal(Type.getType(String[].class));
         aa.visitInsn(labelValues.size() + 3);
         aa.visitTypeInsn(ANEWARRAY, Type.getInternalName(String.class));
         for (int i = 0; i < labelValues.size(); i++) {
@@ -96,6 +95,7 @@ public abstract class AbstractListener implements Listener {
             aa.visitInsn(i + 3);
             injectLabelValue(labelValues.get(i));
         }
+        int labelVar = aa.newLocal(Type.getType(String[].class));
         aa.visitVarInsn(ASTORE, labelVar);
         return labelVar;
     }

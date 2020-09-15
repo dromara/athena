@@ -47,6 +47,11 @@ public class PrometheusMetricsRegister implements MetricRegister {
     
     private final Map<String, Object> configMap;
     
+    /**
+     * Instantiates a new Prometheus metrics register.
+     *
+     * @param configMap the config map
+     */
     public PrometheusMetricsRegister(final Map<String, Object> configMap) {
         this.configMap = configMap;
         registerJvm(configMap);
@@ -72,7 +77,6 @@ public class PrometheusMetricsRegister implements MetricRegister {
             GAUGE_MAP.put(name, builder.register());
         }
     }
-    
     
     @Override
     public void registerHistogram(final String name, final String[] labelNames, final String doc) {
@@ -133,6 +137,9 @@ public class PrometheusMetricsRegister implements MetricRegister {
         }
     }
     
+    /**
+     * Start server.
+     */
     public void startServer() {
         int port = DEFAULT_HTTP_PORT;
         if (configMap.containsKey("port")) {
@@ -155,7 +162,7 @@ public class PrometheusMetricsRegister implements MetricRegister {
     
     private void registerJvm(final Map<String, Object> configMap) {
         if (!configMap.isEmpty()) {
-            boolean enabled = Boolean.parseBoolean(configMap.get("enabled").toString());
+            boolean enabled = Boolean.parseBoolean(configMap.get("jvmEnabled").toString());
             if (enabled) {
                 new BuildInfoCollector().register();
                 DefaultExports.initialize();

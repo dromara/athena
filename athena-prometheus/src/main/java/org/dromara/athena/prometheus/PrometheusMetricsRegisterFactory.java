@@ -28,6 +28,7 @@ import org.dromara.athena.spi.MetricRegisterFactory;
  */
 public class PrometheusMetricsRegisterFactory implements MetricRegisterFactory {
     
+    @Override
     public MetricRegister newInstance(final Map<String, Object> configuration) {
         return new PrometheusMetricsRegister(configuration);
     }

@@ -60,11 +60,13 @@ public class PrometheusMetricsRegister implements MetricRegister {
     
     @Override
     public void registerCounter(final String name, final String[] labelNames, final String doc) {
-        Counter.Builder builder = Counter.build().name(name).help(doc);
-        if (labelNames != null) {
-            builder.labelNames(labelNames);
+        if (!COUNTER_MAP.containsKey(name)) {
+            Counter.Builder builder = Counter.build().name(name).help(doc);
+            if (labelNames != null) {
+                builder.labelNames(labelNames);
+            }
+            COUNTER_MAP.put(name, builder.register());
         }
-        COUNTER_MAP.put(name, builder.register());
     }
     
     @Override
@@ -80,11 +82,13 @@ public class PrometheusMetricsRegister implements MetricRegister {
     
     @Override
     public void registerHistogram(final String name, final String[] labelNames, final String doc) {
-        Histogram.Builder builder = Histogram.build().name(name).help(doc);
-        if (labelNames != null) {
-            builder.labelNames(labelNames);
+        if (!HISTOGRAM_MAP.containsKey(name)) {
+            Histogram.Builder builder = Histogram.build().name(name).help(doc);
+            if (labelNames != null) {
+                builder.labelNames(labelNames);
+            }
+            HISTOGRAM_MAP.put(name, builder.register());
         }
-        HISTOGRAM_MAP.put(name, builder.register());
     }
     
     @Override

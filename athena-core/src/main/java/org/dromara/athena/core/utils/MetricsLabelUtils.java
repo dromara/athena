@@ -20,6 +20,7 @@ package org.dromara.athena.core.utils;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import org.apache.commons.collections.CollectionUtils;
 import org.objectweb.asm.Type;
 
 /**
@@ -42,6 +43,9 @@ public class MetricsLabelUtils {
      * @return the string [ ]
      */
     public static String[] getLabelNames(final List<String> labels) {
+        if (CollectionUtils.isEmpty(labels)) {
+            return null;
+        }
         return labels.stream().map(label -> label.split(REGEX)[0]).toArray(String[]::new);
     }
     
@@ -63,6 +67,9 @@ public class MetricsLabelUtils {
      * @return the label values
      */
     public static List<String> getLabelValues(final List<String> labels) {
+        if (CollectionUtils.isEmpty(labels)) {
+            return null;
+        }
         return labels.stream().map(label -> label.split(REGEX)[1]).collect(Collectors.toList());
     }
     
@@ -111,6 +118,6 @@ public class MetricsLabelUtils {
         if (hasBeanParam(labelValue)) {
             return Integer.parseInt(labelValue.substring(1, labelValue.indexOf(PARAM)));
         }
-        return Integer.parseInt(labelValue.substring(1));
+        return 0;
     }
 }

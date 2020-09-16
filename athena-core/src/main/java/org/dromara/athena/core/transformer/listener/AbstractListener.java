@@ -102,8 +102,12 @@ public abstract class AbstractListener implements Listener {
     }
     
     private void injectLabelValue(final String labelValue) {
-        int argIndex = MetricsLabelUtils.getLabelValueIndex(labelValue);
-        argsLoad(argIndex);
+        if (labelValue.startsWith("$")) {
+            int argIndex = MetricsLabelUtils.getLabelValueIndex(labelValue);
+            argsLoad(argIndex);
+        } else {
+            aa.visitLdcInsn(labelValue);
+        }
         if (MetricsLabelUtils.hasBeanParam(labelValue)) {
             aa.visitLdcInsn(MetricsLabelUtils.getLabelVarIndex(labelValue));
             aa.visitMethodInsn(INVOKESTATIC, Type.getInternalName(PropertyUtils.class), "getNestedProperty",

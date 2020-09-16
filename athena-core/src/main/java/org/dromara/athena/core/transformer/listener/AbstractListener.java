@@ -23,6 +23,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.dromara.athena.core.config.Metric;
 import org.dromara.athena.core.reporter.MetricsReporter;
 import org.dromara.athena.core.utils.MetricsLabelUtils;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.AdviceAdapter;
 
@@ -101,6 +102,8 @@ public abstract class AbstractListener implements Listener {
     }
     
     private void injectLabelValue(final String labelValue) {
+        int argIndex = MetricsLabelUtils.getLabelValueIndex(labelValue);
+        argsLoad(argIndex);
         if (MetricsLabelUtils.hasBeanParam(labelValue)) {
             aa.visitLdcInsn(MetricsLabelUtils.getLabelVarIndex(labelValue));
             aa.visitMethodInsn(INVOKESTATIC, Type.getInternalName(PropertyUtils.class), "getNestedProperty",
@@ -109,6 +112,25 @@ public abstract class AbstractListener implements Listener {
         aa.visitMethodInsn(INVOKESTATIC, Type.getInternalName(String.class), "valueOf",
                 Type.getMethodDescriptor(Type.getType(String.class), Type.getType(Object.class)), false);
         aa.visitInsn(AASTORE);
+    }
+    
+    private void argsLoad(final int argsIndex) {
+        Type type = argTypes[argsIndex];
+        int stackIndex = getStackIndex(argsIndex);
+        if (type.getSort() == Type.OBJECT) {
+            aa.visitVarInsn(ALOAD, stackIndex);
+        } else {
+            aa.visitVarInsn(type.getOpcode(Opcodes.ILOAD), stackIndex);
+            aa.valueOf(type);
+        }
+    }
+    
+    private int getStackIndex(final int args) {
+        int index = (access & Opcodes.ACC_STATIC) == 0 ? 1 : 0;
+        for (int i = 0; i < args; i++) {
+            index += argTypes[i].getSize();
+        }
+        return index;
     }
     
 }

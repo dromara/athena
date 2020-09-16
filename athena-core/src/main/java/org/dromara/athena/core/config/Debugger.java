@@ -27,7 +27,7 @@ import lombok.Data;
 @Data
 public class Debugger {
     
-    private Boolean debug;
+    private boolean debug;
     
     private String outPath;
 }

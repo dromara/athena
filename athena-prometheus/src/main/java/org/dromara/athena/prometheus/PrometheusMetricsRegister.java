@@ -143,7 +143,7 @@ public class PrometheusMetricsRegister implements MetricRegister {
     public void startServer() {
         int port = DEFAULT_HTTP_PORT;
         if (configMap.containsKey("port")) {
-            port = Integer.parseInt((String) configMap.get("port"));
+            port = (Integer) configMap.get("port");
         }
         String host = (String) configMap.get("host");
         InetSocketAddress inetSocketAddress;
@@ -154,7 +154,7 @@ public class PrometheusMetricsRegister implements MetricRegister {
         }
         try {
             new HTTPServer(inetSocketAddress, CollectorRegistry.defaultRegistry, true);
-            System.out.println("you start prometheus metrics http server  host is : " + host + " port is : " + port);
+            System.out.println("you start prometheus metrics http server  host is : " + inetSocketAddress.getPort() + " port is : " + inetSocketAddress.getPort());
         } catch (IOException e) {
             e.printStackTrace();
         }

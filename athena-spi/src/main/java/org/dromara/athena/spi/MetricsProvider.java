@@ -34,7 +34,7 @@ public enum MetricsProvider {
     private Map<String, Object> configMap;
     
     static {
-        metricRegisterFactory = ServiceLoader.getServiceLoader(MetricRegisterFactory.class).newServiceInstances().orElse(null);
+        metricRegisterFactory = AthenaServiceLoader.getServiceLoader(MetricRegisterFactory.class).newServiceInstances().orElse(null);
     }
     
     

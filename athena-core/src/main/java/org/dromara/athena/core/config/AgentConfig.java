@@ -122,7 +122,7 @@ public class AgentConfig {
             Map<String, String> methodMap = toMethodDescriptorMap(descriptor);
             for (String name : methodMap.keySet()) {
                 if (importsMap.containsKey(name)) {
-                    descriptor = descriptor.replaceAll(className, importsMap.get(className));
+                    descriptor = descriptor.replaceAll(name, importsMap.get(name));
                 }
             }
             key = new Klass(className, key.getMethod(), descriptor);

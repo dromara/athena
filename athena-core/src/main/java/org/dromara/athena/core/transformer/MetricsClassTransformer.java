@@ -56,21 +56,27 @@ public class MetricsClassTransformer implements ClassFileTransformer {
     @Override
     public byte[] transform(final ClassLoader loader, final String className, final Class<?> classBeingRedefined,
                             final ProtectionDomain protectionDomain, final byte[] classfileBuffer) {
-        if (agentConfig.hasMetric(className)) {
-            ClassReader cr = new ClassReader(classfileBuffer);
-            ClassWriter cw = new ASMClassWriter(COMPUTE_FRAMES | COMPUTE_MAXS, loader);
-            ClassVisitor cv = new MetricsClassVisitor(cw, agentConfig);
-            cr.accept(cv, EXPAND_FRAMES);
-            output(cw, className);
-            return cw.toByteArray();
+        try {
+            if (agentConfig.hasMetric(className)) {
+                ClassReader cr = new ClassReader(classfileBuffer);
+                ClassWriter cw = new ASMClassWriter(COMPUTE_FRAMES | COMPUTE_MAXS, loader);
+                ClassVisitor cv = new MetricsClassVisitor(cw, agentConfig);
+                cr.accept(cv, EXPAND_FRAMES);
+                output(cw, className);
+                return cw.toByteArray();
+            }
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            throw e;
         }
+    
         return classfileBuffer;
     }
     
     @SneakyThrows
     private void output(final ClassWriter cw, final String className) {
-        if (debugger.getDebug()) {
-            try (FileOutputStream fos = new FileOutputStream(getPath() + className.substring(className.lastIndexOf("/") + 1) + ".class");) {
+        if (debugger.isDebug()) {
+            try (FileOutputStream fos = new FileOutputStream(getPath() + "/" + className.substring(className.lastIndexOf("/") + 1) + ".class")) {
                 fos.write(cw.toByteArray());
             }
         }
@@ -78,7 +84,7 @@ public class MetricsClassTransformer implements ClassFileTransformer {
     
     private String getPath() {
         String path;
-        if ("".equalsIgnoreCase(debugger.getOutPath())) {
+        if (null == debugger.getOutPath() || "".equalsIgnoreCase(debugger.getOutPath())) {
             path = System.getProperty("user.dir");
         } else {
             path = debugger.getOutPath();

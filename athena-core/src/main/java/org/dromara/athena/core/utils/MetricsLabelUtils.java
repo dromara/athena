@@ -88,7 +88,7 @@ public class MetricsLabelUtils {
     
     private static boolean checkLabel(final Type[] argTypes, final String labelValue) {
         if (labelValue.startsWith("$")) {
-            if (Pattern.matches(REGEX_PATTERN, labelValue)) {
+            if (!Pattern.matches(REGEX_PATTERN, labelValue)) {
                 return false;
             }
             int index = getLabelValueIndex(labelValue);
@@ -101,7 +101,13 @@ public class MetricsLabelUtils {
         return true;
     }
     
-    private static int getLabelValueIndex(final String labelValue) {
+    /**
+     * Gets label value index.
+     *
+     * @param labelValue the label value
+     * @return the label value index
+     */
+    public static int getLabelValueIndex(final String labelValue) {
         if (hasBeanParam(labelValue)) {
             return Integer.parseInt(labelValue.substring(1, labelValue.indexOf(PARAM)));
         }

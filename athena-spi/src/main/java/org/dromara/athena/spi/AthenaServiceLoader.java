@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -28,15 +29,15 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author xiaoyu
  */
-public final class ServiceLoader<T> {
+public final class AthenaServiceLoader<T> {
     
-    private static final Map<Class<?>, ServiceLoader<?>> LOADERS = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, AthenaServiceLoader<?>> LOADERS = new ConcurrentHashMap<>();
     
     private final Map<Class<?>, Collection<T>> serviceMap = new ConcurrentHashMap<>();
     
     private final Class<T> service;
 
-    private ServiceLoader(final Class<T> service) {
+    private AthenaServiceLoader(final Class<T> service) {
         this.service = service;
         register(service);
     }
@@ -49,19 +50,19 @@ public final class ServiceLoader<T> {
      * @return singleton service loader.
      */
     @SuppressWarnings("unchecked")
-    public static <T> ServiceLoader<T> getServiceLoader(final Class<T> service) {
+    public static <T> AthenaServiceLoader<T> getServiceLoader(final Class<T> service) {
         if (null == service) {
             throw new NullPointerException("extension clazz is null");
         }
         if (!service.isInterface()) {
             throw new IllegalArgumentException("extension clazz (" + service + "is not interface!");
         }
-        ServiceLoader<T> serviceLoader = (ServiceLoader<T>) LOADERS.get(service);
-        if (null != serviceLoader) {
-            return serviceLoader;
+        AthenaServiceLoader<T> athenaServiceLoader = (AthenaServiceLoader<T>) LOADERS.get(service);
+        if (null != athenaServiceLoader) {
+            return athenaServiceLoader;
         }
-        LOADERS.putIfAbsent(service, new ServiceLoader<>(service));
-        return (ServiceLoader<T>) LOADERS.get(service);
+        LOADERS.putIfAbsent(service, new AthenaServiceLoader<>(service));
+        return (AthenaServiceLoader<T>) LOADERS.get(service);
     }
     
     /**
@@ -78,7 +79,7 @@ public final class ServiceLoader<T> {
             return;
         }
         serviceMap.put(service, new LinkedList<>());
-        for (T each : java.util.ServiceLoader.load(service)) {
+        for (T each : ServiceLoader.load(service)) {
             serviceMap.get(service).add(each);
         }
     }

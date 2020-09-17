@@ -76,7 +76,9 @@ public class MetricsClassTransformer implements ClassFileTransformer {
     @SneakyThrows
     private void output(final ClassWriter cw, final String className) {
         if (debugger.isDebug()) {
-            try (FileOutputStream fos = new FileOutputStream(getPath() + "/" + className.substring(className.lastIndexOf("/") + 1) + ".class")) {
+            String path = getPath() + "/" + className.substring(className.lastIndexOf("/") + 1) + ".class";
+            System.out.println("output path is " + path);
+            try (FileOutputStream fos = new FileOutputStream(path)) {
                 fos.write(cw.toByteArray());
             }
         }
